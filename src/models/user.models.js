@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
         minlength: [3, "Last name must be at least 3 characters long"]
     },
     email: {
-        type: String,
+        type: String,   
         required: true,
         unique: true,
         minlength: [5, "Email must be at least 5 characters long"],
@@ -27,11 +27,9 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        select: false
     },
     refreshToken: {
         type: String,
-        select: false
     },
     socketId: {
         type: String
@@ -44,8 +42,8 @@ userSchema.pre("save", async function (next) {
     next()
 });
 
-userSchema.methods.isValidPassword = async function (password) {
-    return await bcrypt.compare(password, this.password)
+userSchema.methods.isPasswordTrue = async function (password) {   
+    return await bcrypt.compare(password,this.password)
 };
 userSchema.methods.generateAccesssToken = function () {
     return jwt.sign({

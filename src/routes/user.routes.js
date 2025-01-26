@@ -1,6 +1,6 @@
 import express from "express"
 import { body, check } from "express-validator"
-import { createUser } from "../controllers/user.controller.js"
+import { createUser, login } from "../controllers/user.controller.js"
 import { upload } from "../middlewares/multer.middleware.js"
 const router = express.Router()
 
@@ -34,11 +34,9 @@ router.route("/register-user").post([
     })
 ], createUser)
 
-// router.route("/login", [
-//     body("email").isEmail().withMessage("Invalid Email"),
-//     body("password").isLength({ min: 4 }).withMessage("Password must be at least 4 characters long"),
-// ], login)
-
-// router.route("/logout", logout)
+router.route("/login").post([
+    body("email").isEmail().withMessage("Invalid Email"),
+    body("password").isLength({ min: 4 }).withMessage("Password must be at least 4 characters long"),
+], login)
 
 export default router
