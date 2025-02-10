@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken"
-import asyncHandler from "../utils/asyncHandler"
-import ApiError from "../utils/ApiError"
-import conf from "../conf/conf"
-
+import asyncHandler from "../utils/asyncHandler.js"
+import ApiError from "../utils/ApiError.js"
+import conf from "../conf/conf.js"
+import { User } from "../models/user.models.js"
+import { Rider } from "../models/rider.models.js"
 const verifyJWT = asyncHandler(async (req, res, next) => {
     try {
         const token = req.cookies?.accessToken || req.headers("Authorization")?.replace("Bearer ", "")
@@ -11,13 +12,11 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
         }
         const decodedToken = jwt.verify(token, conf.accessTokenSecret)
         let user;
-
         if (decodedToken?.role === "user") {
-            user = await User.findById(decodedToken._id)
+            user = await User.findById(decodedToken._id).select("-password -refreshToken")
+        } else if (decodedToken?.role === "rider") {
+            user = await Rider.findById(decodedToken._id).select("-password -refreshToken")
         }
-        // else if(decodedToken?.role === "captian"){
-        //     user = await Captain
-        // }
         else {
             throw new ApiError(401, "Invalid Access Token")
         }
