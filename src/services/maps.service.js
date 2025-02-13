@@ -2,18 +2,23 @@ import axios from "axios";
 import conf from "../conf/conf.js";
 import { Rider } from "../models/rider.models.js";
 const getAddressCoordinate = async (address) => {
-    const url = `https://api.positionstack.com/v1/forward`;
-    const params = {
-        access_key: '1ab0b604656aa56dab662c7693d17109',
-        query: address
-    }
     try {
-        const response = await axios.get(url, { params })
-        if (response.data.data.length !== 0) {
-            const location = response.data.data[0];
+        if (!address) {
+            throw new Error("Address is required")
+        }
+        // const url = `https://us1.locationiq.com/v1/search/structured?street=${street}&city=${city}&state=${state}&country=${country}&postalcode=${postalcode}&format=json&key=${conf.locationiqApi}`;
+        const url = `https://us1.locationiq.com/v1/search?q=${address}&limit=1&format=json&key=${conf.locationiqApi}`;
+
+        const response = await axios.get(url, {
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        if (response.status === 200) {
+            const location = response.data[0];
             return {
-                ltd: location.latitude,
-                lng: location.longitude
+                ltd: location.lat,
+                lng: location.lon
             }
         } else {
             throw new Error("Unable to access coordinates")
@@ -25,30 +30,38 @@ const getAddressCoordinate = async (address) => {
     }
 }
 const getRiderInRadius = async (ltd, lng, radius) => {
-    const rider = await Rider.find({
-        location: {
-            $geoWithin: {
-                $centerSphere: [[ltd, lng], radius / 6378.1]// radius in radians
+    try {
+        const rider = await Rider.find({
+            location: {
+                $geoWithin: {
+                    $centerSphere: [[ltd, lng], radius / 6378.1]// radius in radians
+                }
             }
-        }
-    })
-    return rider;
+        })
+        return rider;
+    } catch (error) {
+
+    }
 }
 
 const getDistanceTime = async (origin, destination) => {
     if (!origin || !destination) {
         throw new Error("Origin and destination are required")
     }
+    const originGeocode = await getAddressCoordinate(origin)
+    const destinationGeocode = await getAddressCoordinate(destination)
     const apiKey = conf.mapMyIndiaApi
-    const url = `https://apis.mappls.com/advancedmaps/v1/${apiKey}/distance_matrix/biking/77.983936,28.255904;77.05993,28.487555`
+    const url = `https://apis.mappls.com/advancedmaps/v1/${apiKey}/distance_matrix/biking/${originGeocode.lng},${originGeocode.ltd};${destinationGeocode.lng},${destinationGeocode.ltd}`
     try {
         const response = await axios.get(url);
-        if (response.responseCode === 200) {
-            const distanceInKm = response.results.distances[1] / 1000;
-            const durationInMin = response.results.durations[1] / 60;
+        if (response.data.responseCode === 200) {
+            const distanceInKm = response.data.results.distances[0][1] / 1000;
+            const durationInMin = response.data.results.durations[0][1] / 60;
             return {
                 distance: distanceInKm,
-                duration: durationInMin
+                duration: durationInMin,
+                originGeocode:originGeocode,
+                destinationGeocode:destinationGeocode
             }
         } else {
             throw new Error("Unable to fetch distance and time")
@@ -66,14 +79,14 @@ const getAutoSuggestions = async (query) => {
         const url = `https://atlas.mappls.com/api/places/search/json?query=${query}`
         const response = await axios(url, {
             headers: {
-                "Authorization":`Bearer ${conf.mapMyIndiaAccessToken}`,
-                "Content-Type":"application/json"
+                "Authorization": `Bearer ${conf.mapMyIndiaAccessToken}`,
+                "Content-Type": "application/json"
             }
         })
 
         if (response.status === 200) {
             return response.data.suggestedLocations
-        }   
+        }
     } catch (error) {
         console.error(error);
         throw error
