@@ -44,14 +44,12 @@ const getRiderInRadius = async (ltd, lng, radius) => {
     }
 }
 
-const getDistanceTime = async (origin, destination) => {
-    if (!origin || !destination) {
-        throw new Error("Origin and destination are required")
+const getDistanceTime = async (originLng, originLtd,destinationLng,destinationLtd) => {
+    if (!originLng || !originLtd || !destinationLng || !destinationLtd) {
+        throw new Error("lng and ltd are required")
     }
-    const originGeocode = await getAddressCoordinate(origin)
-    const destinationGeocode = await getAddressCoordinate(destination)
     const apiKey = conf.mapMyIndiaApi
-    const url = `https://apis.mappls.com/advancedmaps/v1/${apiKey}/distance_matrix/biking/${originGeocode.lng},${originGeocode.ltd};${destinationGeocode.lng},${destinationGeocode.ltd}`
+    const url = `https://apis.mappls.com/advancedmaps/v1/${apiKey}/distance_matrix/biking/${originLng},${originLtd};${destinationLng},${destinationLtd}`
     try {
         const response = await axios.get(url);
         if (response.data.responseCode === 200) {
@@ -60,8 +58,6 @@ const getDistanceTime = async (origin, destination) => {
             return {
                 distance: distanceInKm,
                 duration: durationInMin,
-                originGeocode:originGeocode,
-                destinationGeocode:destinationGeocode
             }
         } else {
             throw new Error("Unable to fetch distance and time")
@@ -79,7 +75,7 @@ const getAutoSuggestions = async (query) => {
         const url = `https://atlas.mappls.com/api/places/search/json?query=${query}`
         const response = await axios(url, {
             headers: {
-                "Authorization": `Bearer ${conf.mapMyIndiaAccessToken}`,
+                "Authorization":`Bearer ${conf.mapMyIndiaAccessToken}`,
                 "Content-Type": "application/json"
             }
         })
@@ -88,8 +84,10 @@ const getAutoSuggestions = async (query) => {
             return response.data.suggestedLocations
         }
     } catch (error) {
-        console.error(error);
-        throw error
+        // console.error(error);
+        console.log(error);
+        
+        // throw error
     }
 }
 export {
