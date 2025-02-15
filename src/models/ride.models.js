@@ -6,9 +6,9 @@ const rideSchema = new mongoose.Schema({
         unique: true,
         required: true
     },
-    rider:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"rider",
+    rider: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "rider",
         required: true
     },
     user: {
@@ -38,6 +38,11 @@ const rideSchema = new mongoose.Schema({
         enum: ["pending", "accepted", "ongoing", "completed", "cancelled"],
         default: "pending"
     },
+    vehicleType: {
+        type: String,
+        enum: ["car", "bike", "auto"],
+        required: true
+    },
     payment: {
         type: {
             type: String,
@@ -56,10 +61,10 @@ const rideSchema = new mongoose.Schema({
             default: "pending"
         }
     },
-    otp:{
-        type:String,
-        required:true
+    otp: {
+        type: String,
+        required: true
     }
 })
 
-export  const Ride = mongoose.model("Ride",rideSchema)
+export const Ride = mongoose.model("Ride", rideSchema)
