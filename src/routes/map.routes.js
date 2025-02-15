@@ -1,7 +1,7 @@
 import express from 'express';
 import { query } from 'express-validator';
 import verifyJWT from '../middlewares/authMiddleware.js';
-import { getGeocoding, getSuggestion } from '../controllers/map.controller.js';
+import { getDistanceMatrix, getGeocoding, getSuggestion } from '../controllers/map.controller.js';
 const router = express.Router()
 
 router.route("/get-suggestions").get(
@@ -15,4 +15,8 @@ router.route("/get-forward-geocoding").post(
     getGeocoding
 )
 
+router.route("/get-distance-matrix").post(
+    verifyJWT,
+    getDistanceMatrix
+)
 export default router
