@@ -3,7 +3,7 @@ const app = express()
 import cors from "cors";
 import cookieParser from "cookie-parser";
 const corsOptions = {
-    origin: "*",
+    origin: "http://localhost:5173",
     credentials: true
 }
 app.use(cors(corsOptions))
