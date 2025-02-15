@@ -8,6 +8,10 @@ const userSchema = new mongoose.Schema({
         required: true,
         minlength: [3, "First name must be at least 3 characters long"],
     },
+    role:{
+        type:String,
+        required:true
+    },
     lastname: {
         type: String,
         minlength: [3, "Last name must be at least 3 characters long"]
@@ -48,6 +52,8 @@ userSchema.methods.isPasswordTrue = async function (password) {
 userSchema.methods.generateAccesssToken = function () {
     return jwt.sign({
         _id: this._id,
+        role:this.role
+
     }, conf.accessTokenSecret,
         {
             expiresIn: conf.accessTokenExpiry
@@ -56,7 +62,8 @@ userSchema.methods.generateAccesssToken = function () {
 
 userSchema.methods.generateRefreshToken = function () {
     return jwt.sign({
-        _id: this._id
+        _id: this._id,
+        role:this.role
     },
         conf.refreshTokenSecret,
         {
